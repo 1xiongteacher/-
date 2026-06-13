@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>土木学院 · 党员信息管理系统 (Firebase版)</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0a2f44;
+            --primary-red: #b31b1b;
+            --gold: #c6a44b;
+            --light-bg: #f4f7fc;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--light-bg);
+            min-height: 100vh;
+        }
+
+        /* 登录页 */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a2f44 0%, #1a4a6a 100%);
+            padding: 20px;
+        }
+        .auth-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 2.5rem 2.8rem;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .auth-card .logo {
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+        .auth-card .logo i {
+            font-size: 3rem;
+            color: var(--primary-dark);
+        }
+        .auth-card .logo h3 {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-top: 8px;
+        }
+        .auth-card .form-control {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+        }
+        .auth-card .btn-primary {
+            background: var(--primary-dark);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+        }
+        .auth-card .btn-primary:hover {
+            background: #0d3b56;
+            transform: translateY(-2px);
+        }
+        .auth-card .auth-link {
+            color: var(--primary-dark);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .auth-card .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 导航 */
+        .navbar-custom {
+            background: var(--primary-dark);
+            padding: 0.6rem 2rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+        .navbar-custom .navbar-brand {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        .navbar-custom .navbar-brand i {
+            color: var(--gold);
+            margin-right: 10px;
+        }
+        .navbar-custom .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+        }
+        .navbar-custom .nav-link:hover {
+            color: #fff !important;
+        }
+        .user-badge {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 6px 18px;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .user-badge i {
+            color: var(--gold);
+            margin-right: 6px;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            background: linear-gradient(135deg, #0a2f44 0%, #1a4a6a 100%);
+            color: #fff;
+            padding: 2rem 0 1.6rem;
+            margin-bottom: 2rem;
+            border-radius: 0 0 30px 30px;
+        }
+        .page-header h2 {
+            font-weight: 700;
+        }
+
+        /* 卡片 */
+        .category-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 1.6rem 1.2rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: 0.25s;
+            cursor: pointer;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        .category-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            border-color: var(--gold);
+        }
+        .category-card .icon-wrap {
+            font-size: 2.6rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .category-card .cat-count {
+            font-size: 0.85rem;
+            color: #6c757d;
+            background: var(--light-bg);
+            padding: 2px 14px;
+            border-radius: 30px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+        .cat-red .icon-wrap {
+            color: #b31b1b;
+        }
+        .cat-gold .icon-wrap {
+            color: #c6a44b;
+        }
+        .cat-blue .icon-wrap {
+            color: #1a6b8a;
+        }
+        .cat-green .icon-wrap {
+            color: #2d7d46;
+        }
+        .cat-purple .icon-wrap {
+            color: #6f42c1;
+        }
+
+        /* 表格 */
+        .table-container {
+            background: #fff;
+            border-radius: 20px;
+            padding: 1.5rem 1.8rem;
+            box-shadow: var(--card-shadow);
+            margin-top: 1rem;
+        }
+        .table-container .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+        .table-container .table-header h4 {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        .table-custom thead th {
+            background: var(--primary-dark);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 10px 8px;
+            border: none;
+            white-space: nowrap;
+        }
+        .table-custom tbody td {
+            vertical-align: middle;
+            padding: 8px;
+            font-size: 0.88rem;
+        }
+        .table-custom tbody tr:hover {
+            background: #f0f4fa;
+        }
+        .badge-category {
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-applicant {
+            background: #6f42c1;
+            color: #fff;
+        }
+        .badge-active {
+            background: #b31b1b;
+            color: #fff;
+        }
+        .badge-develop {
+            background: #c6a44b;
+            color: #fff;
+        }
+        .badge-prep {
+            background: #1a6b8a;
+            color: #fff;
+        }
+        .badge-formal {
+            background: #2d7d46;
+            color: #fff;
+        }
+
+        /* 模态框 */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        .modal-header {
+            background: var(--primary-dark);
+            color: #fff;
+            border-radius: 20px 20px 0 0;
+            padding: 1rem 1.8rem;
+        }
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        .modal-body {
+            padding: 1.5rem 1.8rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .modal-body .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e50;
+        }
+        .modal-body .form-control,
+        .modal-body .form-select {
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        .modal-body .form-control:focus,
+        .modal-body .form-select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 0.2rem rgba(198, 164, 75, 0.25);
+        }
+        .modal-footer {
+            padding: 0.8rem 1.8rem;
+            border-top: 1px solid #eee;
+        }
+
+        /* 详情 */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px 18px;
+        }
+        .detail-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .detail-item .label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.8rem;
+            display: block;
+        }
+        .detail-item .value {
+            font-size: 0.92rem;
+            color: #212529;
+            word-break: break-word;
+        }
+
+        /* 个人中心 */
+        .profile-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+        .profile-card .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary-dark);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .scrollable-table {
+            overflow-x: auto;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* 支部筛选标签 */
+        .branch-tag {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #e9ecef;
+            color: #495057;
+            margin: 2px 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .branch-tag:hover {
+            background: #ced4da;
+        }
+        .branch-tag.active {
+            background: var(--primary-dark);
+            color: #fff;
+        }
+
+        /* 通知徽章 */
+        .notification-badge {
+            background: #b31b1b;
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            position: relative;
+            top: -8px;
+            right: 4px;
+        }
+
+        /* 消息气泡 */
+        .msg-bubble {
+            background: #e9ecef;
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            border-left: 4px solid var(--primary-dark);
+        }
+        .msg-bubble .msg-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 1.8rem 1.5rem;
+            }
+            .table-container {
+                padding: 1rem;
+            }
+            .profile-card {
+                padding: 1.2rem;
+            }
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================= 登录 ========================= -->
+    <div id="page-login" class="auth-container">
+        <div class="auth-card">
+            <div class="logo">
+                <i class="fas fa-flag"></i>
+                <h3>党员信息管理系统</h3>
+                <p>土木与环境工程学院 · 党建办公室 · Firebase版</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="loginUsername" placeholder="请输入用户名" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">密码</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="请输入密码" required>
+                </div>
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>登 录
+                    </button>
+                </div>
+                <div class="text-center">
+                    <span class="text-muted">没有账号？</span>
+                    <a class="auth-link" onclick="showRegister()">立即注册</a>
+                </div>
+                <div class="mt-3 text-center text-muted small">
+                    <span>默认管理员：admin / admin123</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================= 注册 ========================= -->
+    <div id="page-register" class="auth-container hidden">
+        <div class="auth-card">
+            <div class="logo">
+                <i class="fas fa-user-plus"></i>
+                <h3>注册新账号</h3>
+                <p>请填写基本信息完成注册</p>
+            </div>
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="mb-2">
+                    <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="regUsername" placeholder="字母、数字或下划线" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">密码 <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="regPassword" placeholder="至少6位" required minlength="6">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">确认密码 <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="regConfirm" placeholder="再次输入密码" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">姓名 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="regName" placeholder="请输入真实姓名" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">班级 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="regClass" placeholder="如 智建2403" required>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">所属支部 <span class="text-danger">*</span></label>
+                    <select class="form-select" id="regBranch" required>
+                        <option value="">请选择支部</option>
+                        <option value="工力本科生党支部">工力本科生党支部</option>
+                        <option value="建工本科生党支部">建工本科生党支部</option>
+                        <option value="桥梁本科生党支部">桥梁本科生党支部</option>
+                        <option value="桥卓本科生党支部">桥卓本科生党支部</option>
+                        <option value="未来城市科学本科生党支部">未来城市科学本科生党支部</option>
+                        <option value="岩隧本科生党支部">岩隧本科生党支部</option>
+                        <option value="智建本科生党支部">智建本科生党支部</option>
+                    </select>
+                </div>
+                <div class="d-grid mb-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-check me-2"></i>注 册
+                    </button>
+                </div>
+                <div class="text-center">
+                    <span class="text-muted">已有账号？</span>
+                    <a class="auth-link" onclick="showLogin()">返回登录</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================= 主界面 ========================= -->
+    <div id="page-main" class="hidden">
+
+        <!-- 导航 -->
+        <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-flag"></i> 土木党建 · 信息管理
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+                    <span class="navbar-toggler-icon" style="filter: brightness(0) invert(1);"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navMain">
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <li class="nav-item">
+                            <span class="user-badge">
+                                <i class="fas fa-user-circle"></i> <span id="mainUserInfo">加载中...</span>
+                            </span>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <a class="nav-link text-danger" href="#" onclick="handleLogout()">
+                                <i class="fas fa-sign-out-alt"></i> 退出
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 标题 -->
+        <div class="page-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2><i class="fas fa-flag me-2" style="color: var(--gold);"></i><span id="mainTitle">党员信息管理</span></h2>
+                        <p class="subtitle mb-0" id="mainSubtitle">土木与环境工程学院 · 党建办公室 · Firebase云同步</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <span class="badge bg-light text-dark px-4 py-2 rounded-pill">
+                            <i class="fas fa-database me-1"></i> 总人数: <span id="mainTotal">0</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 管理员视图 ===== -->
+        <div id="view-admin" class="container-fluid px-4 pb-5">
+            <!-- 统计卡片 -->
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-purple" onclick="filterCategory('入党申请人')">
+                        <span class="icon-wrap"><i class="fas fa-file-signature"></i></span>
+                        <h5>入党申请人</h5>
+                        <span class="cat-count" id="countApplicant">0 人</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-red" onclick="filterCategory('入党积极分子')">
+                        <span class="icon-wrap"><i class="fas fa-seedling"></i></span>
+                        <h5>入党积极分子</h5>
+                        <span class="cat-count" id="countActive">0 人</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-gold" onclick="filterCategory('发展对象')">
+                        <span class="icon-wrap"><i class="fas fa-arrow-up"></i></span>
+                        <h5>发展对象</h5>
+                        <span class="cat-count" id="countDevelop">0 人</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-blue" onclick="filterCategory('预备党员')">
+                        <span class="icon-wrap"><i class="fas fa-clock"></i></span>
+                        <h5>预备党员</h5>
+                        <span class="cat-count" id="countPrep">0 人</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-green" onclick="filterCategory('正式党员')">
+                        <span class="icon-wrap"><i class="fas fa-star"></i></span>
+                        <h5>正式党员</h5>
+                        <span class="cat-count" id="countFormal">0 人</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card" onclick="showNotificationCenter()" style="border-color: #b31b1b;">
+                        <span class="icon-wrap"><i class="fas fa-bell" style="color: #b31b1b;"></i></span>
+                        <h5>通知中心 <span id="notifyBadge" class="notification-badge hidden">0</span></h5>
+                        <span class="cat-count">未填提醒</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 支部筛选 -->
+            <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+                <span class="fw-bold me-2"><i class="fas fa-filter"></i> 支部筛选:</span>
+                <span class="branch-tag active" data-branch="all" onclick="filterByBranch('all')">全部</span>
+                <span class="branch-tag" data-branch="工力本科生党支部" onclick="filterByBranch('工力本科生党支部')">工力</span>
+                <span class="branch-tag" data-branch="建工本科生党支部" onclick="filterByBranch('建工本科生党支部')">建工</span>
+                <span class="branch-tag" data-branch="桥梁本科生党支部" onclick="filterByBranch('桥梁本科生党支部')">桥梁</span>
+                <span class="branch-tag" data-branch="桥卓本科生党支部" onclick="filterByBranch('桥卓本科生党支部')">桥卓</span>
+                <span class="branch-tag" data-branch="未来城市科学本科生党支部" onclick="filterByBranch('未来城市科学本科生党支部')">未来城市</span>
+                <span class="branch-tag" data-branch="岩隧本科生党支部" onclick="filterByBranch('岩隧本科生党支部')">岩隧</span>
+                <span class="branch-tag" data-branch="智建本科生党支部" onclick="filterByBranch('智建本科生党支部')">智建</span>
+            </div>
+
+            <!-- 人员表格 -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h4><i class="fas fa-users me-2"></i><span id="currentCategoryLabel">全体人员</span> <span class="badge bg-secondary ms-2" id="adminListCount">0</span></h4>
+                    <div class="actions d-flex flex-wrap gap-2">
+                        <select class="form-select form-select-sm d-inline-block" style="width:auto;border-radius:30px;" id="adminFilterSelect" onchange="adminFilterChange()">
+                            <option value="all">全部类别</option>
+                            <option value="入党申请人">入党申请人</option>
+                            <option value="入党积极分子">入党积极分子</option>
+                            <option value="发展对象">发展对象</option>
+                            <option value="预备党员">预备党员</option>
+                            <option value="正式党员">正式党员</option>
+                        </select>
+                        <button class="btn btn-sm btn-success" onclick="adminAddUser()">
+                            <i class="fas fa-plus"></i> 新增
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="adminExportExcel()">
+                            <i class="fas fa-file-excel"></i> 导出
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="adminRefresh()">
+                            <i class="fas fa-sync"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div class="scrollable-table">
+                    <table class="table table-custom table-hover" id="adminTable">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th>姓名</th>
+                                <th>类别</th>
+                                <th>支部</th>
+                                <th>班级</th>
+                                <th>民族</th>
+                                <th>英语</th>
+                                <th>综合测评</th>
+                                <th>志愿时长</th>
+                                <th style="width:170px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-muted small">共 <span id="adminFooterCount">0</span> 条记录</div>
+            </div>
+        </div>
+
+        <!-- ===== 用户视图 ===== -->
+        <div id="view-user" class="container-fluid px-4 pb-5 hidden">
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-purple" onclick="userFillForm('入党申请人')">
+                        <span class="icon-wrap"><i class="fas fa-file-signature"></i></span>
+                        <h5>入党申请人</h5>
+                        <span class="cat-count" id="userCountApplicant">待填写</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-red" onclick="userFillForm('入党积极分子')">
+                        <span class="icon-wrap"><i class="fas fa-seedling"></i></span>
+                        <h5>入党积极分子</h5>
+                        <span class="cat-count" id="userCountActive">待填写</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-gold" onclick="userFillForm('发展对象')">
+                        <span class="icon-wrap"><i class="fas fa-arrow-up"></i></span>
+                        <h5>发展对象</h5>
+                        <span class="cat-count" id="userCountDevelop">待填写</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-blue" onclick="userFillForm('预备党员')">
+                        <span class="icon-wrap"><i class="fas fa-clock"></i></span>
+                        <h5>预备党员</h5>
+                        <span class="cat-count" id="userCountPrep">待填写</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card cat-green" onclick="userFillForm('正式党员')">
+                        <span class="icon-wrap"><i class="fas fa-star"></i></span>
+                        <h5>正式党员</h5>
+                        <span class="cat-count" id="userCountFormal">待填写</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-2">
+                    <div class="category-card" onclick="userViewMessages()" style="border-color: #b31b1b;">
+                        <span class="icon-wrap"><i class="fas fa-envelope" style="color: #b31b1b;"></i></span>
+                        <h5>消息 <span id="userMsgBadge" class="notification-badge hidden">0</span></h5>
+                        <span class="cat-count">查看通知</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户个人中心 -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="profile-card">
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div class="avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <h4 id="userProfileName">姓名</h4>
+                                <p class="text-muted mb-1"><i class="fas fa-tag me-1"></i><span id="userProfileCategory">未选择</span></p>
+                                <p class="text-muted mb-0"><i class="fas fa-school me-1"></i><span id="userProfileClass">班级</span></p>
+                                <p class="text-muted mb-0"><i class="fas fa-building me-1"></i><span id="userProfileBranch">支部</span></p>
+                            </div>
+                            <div class="ms-auto">
+                                <button class="btn btn-outline-primary" onclick="userViewMyInfo()">
+                                    <i class="fas fa-id-card"></i> 查看已填信息
+                                </button>
+                            </div>
+                        </div>
+                        <hr>
+                        <div id="userProfileDetail" class="detail-grid">
+                            <div class="text-muted text-center py-3">请点击上方类别卡片选择身份并填写信息</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 通知中心（管理员） ===== -->
+        <div id="view-notification" class="container-fluid px-4 pb-5 hidden">
+            <div class="table-container">
+                <div class="table-header">
+                    <h4><i class="fas fa-bell me-2" style="color: #b31b1b;"></i> 未填写信息人员清单</h4>
+                    <div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="sendNotifications()">
+                            <i class="fas fa-paper-plane"></i> 发送提醒
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="showPage('admin')">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </button>
+                    </div>
+                </div>
+                <div class="scrollable-table">
+                    <table class="table table-custom table-hover" id="notifyTable">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>类别</th>
+                                <th>支部</th>
+                                <th>班级</th>
+                                <th>缺失字段</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notifyTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-muted small">共 <span id="notifyCount">0</span> 条未填记录</div>
+            </div>
+        </div>
+
+        <!-- ===== 用户消息视图 ===== -->
+        <div id="view-user-messages" class="container-fluid px-4 pb-5 hidden">
+            <div class="table-container">
+                <div class="table-header">
+                    <h4><i class="fas fa-envelope me-2" style="color: #b31b1b;"></i> 我的消息</h4>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="showPage('user')">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </button>
+                    </div>
+                </div>
+                <div id="userMessageList" class="p-3">
+                    <!-- 消息列表 -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================= 模态框：新增/编辑人员（管理员） ========================= -->
+    <div class="modal fade" id="adminMemberModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminModalTitle"><i class="fas fa-user-edit me-2"></i> 添加人员</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="adminMemberForm">
+                        <input type="hidden" id="adminEditId" value="">
+                        <input type="hidden" id="adminEditUserId" value="">
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-2"><label class="form-label">人员类别 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="adminFormCategory" required>
+                                    <option value="">请选择</option>
+                                    <option value="入党申请人">入党申请人</option>
+                                    <option value="入党积极分子">入党积极分子</option>
+                                    <option value="发展对象">发展对象</option>
+                                    <option value="预备党员">预备党员</option>
+                                    <option value="正式党员">正式党员</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">姓名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="adminFormName" required>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">性别</label>
+                                <select class="form-select" id="adminFormGender"><option value="男">男</option><option value="女">女</option></select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">民族</label>
+                                <input type="text" class="form-control" id="adminFormEthnicity" value="汉族">
+                            </div>
+                            <div class="col-md-2"><label class="form-label">政治面貌</label>
+                                <select class="form-select" id="adminFormPolitics">
+                                    <option value="共青团员">共青团员</option>
+                                    <option value="预备党员">预备党员</option>
+                                    <option value="中共党员">中共党员</option>
+                                    <option value="群众">群众</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">所属支部 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="adminFormBranch" required>
+                                    <option value="">请选择</option>
+                                    <option value="工力本科生党支部">工力本科生党支部</option>
+                                    <option value="建工本科生党支部">建工本科生党支部</option>
+                                    <option value="桥梁本科生党支部">桥梁本科生党支部</option>
+                                    <option value="桥卓本科生党支部">桥卓本科生党支部</option>
+                                    <option value="未来城市科学本科生党支部">未来城市科学本科生党支部</option>
+                                    <option value="岩隧本科生党支部">岩隧本科生党支部</option>
+                                    <option value="智建本科生党支部">智建本科生党支部</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">班级</label><input type="text" class="form-control" id="adminFormClass"></div>
+                            <div class="col-md-3"><label class="form-label">学号</label><input type="text" class="form-control" id="adminFormStudentId"></div>
+                            <div class="col-md-3"><label class="form-label">联系电话</label><input type="text" class="form-control" id="adminFormPhone"></div>
+                            <div class="col-md-3"><label class="form-label">身份证号</label><input type="text" class="form-control" id="adminFormIdCard"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">出生日期</label><input type="date" class="form-control" id="adminFormBirth"></div>
+                            <div class="col-md-3"><label class="form-label">籍贯</label><input type="text" class="form-control" id="adminFormNative"></div>
+                            <div class="col-md-3"><label class="form-label">入党申请书提交</label><input type="date" class="form-control" id="adminFormPartyApply"></div>
+                            <div class="col-md-3"><label class="form-label">党校结业时间</label><input type="date" class="form-control" id="adminFormPartyTrain"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">团支部推优率</label><input type="text" class="form-control" id="adminFormRecommend" placeholder="如 1 或 0.97"></div>
+                            <div class="col-md-3"><label class="form-label">综合测评排名</label><input type="text" class="form-control" id="adminFormRanking" placeholder="如 1/39"></div>
+                            <div class="col-md-2"><label class="form-label">英语过级</label>
+                                <select class="form-select" id="adminFormEnglish"><option value="无">无</option><option value="四级">四级</option><option value="六级">六级</option></select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">计算机过级</label>
+                                <select class="form-select" id="adminFormComputer"><option value="无">无</option><option value="二级">二级</option><option value="三级">三级</option></select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">重修科目数</label><input type="number" class="form-control" id="adminFormRetake" value="0" min="0"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6"><label class="form-label">曾任职务</label><input type="text" class="form-control" id="adminFormFormerPos"></div>
+                            <div class="col-md-6"><label class="form-label">现任职情况</label><input type="text" class="form-control" id="adminFormCurrentPos"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-4"><label class="form-label">志愿活动参与情况</label><textarea class="form-control" id="adminFormVolunteer" rows="2"></textarea></div>
+                            <div class="col-md-4"><label class="form-label">志愿服务时长</label><input type="text" class="form-control" id="adminFormVolunteerHours" placeholder="如 57h"></div>
+                            <div class="col-md-4"><label class="form-label">德育章数量</label><input type="text" class="form-control" id="adminFormMoralStamps"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-4"><label class="form-label">学科竞赛/论文/专利</label><textarea class="form-control" id="adminFormCompetition" rows="2"></textarea></div>
+                            <div class="col-md-4"><label class="form-label">获奖情况</label><textarea class="form-control" id="adminFormAwards" rows="2"></textarea></div>
+                            <div class="col-md-4"><label class="form-label">处分</label><input type="text" class="form-control" id="adminFormPunishment" placeholder="无"></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-3"><label class="form-label">学习强国分数</label><input type="text" class="form-control" id="adminFormStudyScore"></div>
+                            <div class="col-md-3"><label class="form-label">通报批评次数</label><input type="number" class="form-control" id="adminFormCriticism" value="0" min="0"></div>
+                            <div class="col-md-3"><label class="form-label">思想汇报篇数</label><input type="number" class="form-control" id="adminFormThoughtReport" value="0" min="0"></div>
+                            <div class="col-md-3"><label class="form-label">备注</label><input type="text" class="form-control" id="adminFormRemarks"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="adminSaveMember()">
+                        <i class="fas fa-save me-1"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= 模态框：详情 ========================= -->
+    <div class="modal fade" id="adminDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#1a4a6a;">
+                    <h5 class="modal-title"><i class="fas fa-id-card me-2"></i> 人员详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="adminDetailContent" class="detail-grid"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-warning" id="adminDetailEditBtn" onclick="adminEditFromDetail()">
+                        <i class="fas fa-edit"></i> 编辑
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="adminDeleteFromDetail()">
+                        <i class="fas fa-trash"></i> 删除
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= 模态框：用户填写信息 ========================= -->
+    <div class="modal fade" id="userFillModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userFillTitle"><i class="fas fa-edit me-2"></i> 填写信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userFillForm">
+                        <input type="hidden" id="userFillCategory" value="">
+                        <input type="hidden" id="userFillMemberId" value="">
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">姓名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="userFillName" required>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">性别</label>
+                                <select class="form-select" id="userFillGender"><option value="男">男</option><option value="女">女</option></select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">民族</label>
+                                <input type="text" class="form-control" id="userFillEthnicity" value="汉族">
+                            </div>
+                            <div class="col-md-2"><label class="form-label">政治面貌</label>
+                                <select class="form-select" id="userFillPolitics">
+                                    <option value="共青团员">共青团员</option>
+                                    <option value="预备党员">预备党员</option>
+                                    <option value="中共党员">中共党员</option>
+                                    <option value="群众">群众</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3"><label class="form-label">班级 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="userFillClass" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">学号</label><input type="text" class="form-control" id="userFillStudentId"></div>
+                            <div class="col-md-3"><label class="form-label">联系电话</label><input type="text" class="form-control" id="userFillPhone"></div>
+                            <div class="col-md-3"><label class="form-label">身份证号</label><input type="text" class="form-control" id="userFillIdCard"></div>
+                            <div class="col-md-3"><label class="form-label">出生日期</label><input type="date" class="form-control" id="userFillBirth"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">籍贯</label><input type="text" class="form-control" id="userFillNative"></div>
+                            <div class="col-md-3"><label class="form-label">入党申请书提交</label><input type="date" class="form-control" id="userFillPartyApply"></div>
+                            <div class="col-md-3"><label class="form-label">党校结业时间</label><input type="date" class="form-control" id="userFillPartyTrain"></div>
+                            <div class="col-md-3"><label class="form-label">团支部推优率</label><input type="text" class="form-control" id="userFillRecommend" placeholder="如 1 或 0.97"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-3"><label class="form-label">综合测评排名</label><input type="text" class="form-control" id="userFillRanking" placeholder="如 1/39"></div>
+                            <div class="col-md-2"><label class="form-label">英语过级</label>
+                                <select class="form-select" id="userFillEnglish"><option value="无">无</option><option value="四级">四级</option><option value="六级">六级</option></select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">计算机过级</label>
+                                <select class="form-select" id="userFillComputer"><option value="无">无</option><option value="二级">二级</option><option value="三级">三级</option></select>
+                            </div>
+                            <div class="col-md-2"><label class="form-label">重修科目数</label><input type="number" class="form-control" id="userFillRetake" value="0" min="0"></div>
+                            <div class="col-md-3"><label class="form-label">所属支部</label>
+                                <select class="form-select" id="userFillBranch">
+                                    <option value="工力本科生党支部">工力本科生党支部</option>
+                                    <option value="建工本科生党支部">建工本科生党支部</option>
+                                    <option value="桥梁本科生党支部">桥梁本科生党支部</option>
+                                    <option value="桥卓本科生党支部">桥卓本科生党支部</option>
+                                    <option value="未来城市科学本科生党支部">未来城市科学本科生党支部</option>
+                                    <option value="岩隧本科生党支部">岩隧本科生党支部</option>
+                                    <option value="智建本科生党支部">智建本科生党支部</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6"><label class="form-label">曾任职务</label><input type="text" class="form-control" id="userFillFormerPos"></div>
+                            <div class="col-md-6"><label class="form-label">现任职情况</label><input type="text" class="form-control" id="userFillCurrentPos"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-4"><label class="form-label">志愿活动参与情况</label><textarea class="form-control" id="userFillVolunteer" rows="2"></textarea></div>
+                            <div class="col-md-4"><label class="form-label">志愿服务时长</label><input type="text" class="form-control" id="userFillVolunteerHours" placeholder="如 57h"></div>
+                            <div class="col-md-4"><label class="form-label">德育章数量</label><input type="text" class="form-control" id="userFillMoralStamps"></div>
+                        </div>
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-4"><label class="form-label">学科竞赛/论文/专利</label><textarea class="form-control" id="userFillCompetition" rows="2"></textarea></div>
+                            <div class="col-md-4"><label class="form-label">获奖情况</label><textarea class="form-control" id="userFillAwards" rows="2"></textarea></div>
+                            <div class="col-md-4"><label class="form-label">处分</label><input type="text" class="form-control" id="userFillPunishment" placeholder="无"></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-3"><label class="form-label">学习强国分数</label><input type="text" class="form-control" id="userFillStudyScore"></div>
+                            <div class="col-md-3"><label class="form-label">通报批评次数</label><input type="number" class="form-control" id="userFillCriticism" value="0" min="0"></div>
+                            <div class="col-md-3"><label class="form-label">思想汇报篇数</label><input type="number" class="form-control" id="userFillThoughtReport" value="0" min="0"></div>
+                            <div class="col-md-3"><label class="form-label">备注</label><input type="text" class="form-control" id="userFillRemarks"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="userSaveForm()">
+                        <i class="fas fa-save me-1"></i> 提交信息
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= 模态框：通知发送 ========================= -->
+    <div class="modal fade" id="notifyDetailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#b31b1b;">
+                    <h5 class="modal-title"><i class="fas fa-paper-plane me-2"></i> 发送提醒</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>将向以下未填写完整信息的人员发送提醒通知：</p>
+                    <div id="notifyRecipientList" class="mb-3 p-2 bg-light rounded"></div>
+                    <div class="mb-3">
+                        <label class="form-label">提醒内容</label>
+                        <textarea class="form-control" id="notifyMessage" rows="3">请尽快登录系统完善您的个人信息，谢谢配合！</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmSendNotifications()">
+                        <i class="fas fa-paper-plane"></i> 确认发送
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= 模态框：提取表单 ========================= -->
+    <div class="modal fade" id="extractModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#1a4a6a;">
+                    <h5 class="modal-title"><i class="fas fa-file-export me-2"></i> 提取表单</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>请选择要提取的表单类型：</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="extractForm('发展对象推荐情况登记表')">
+                            <i class="fas fa-file-alt me-2"></i> 发展对象推荐情况登记表
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="extractForm('发展对象推荐情况面试表')">
+                            <i class="fas fa-file-alt me-2"></i> 发展对象推荐情况面试表
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="extractForm('申请入党积极分子信息表')">
+                            <i class="fas fa-file-alt me-2"></i> 申请入党积极分子信息表
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="extractForm('入党积极分子推荐情况登记表')">
+                            <i class="fas fa-file-alt me-2"></i> 入党积极分子推荐情况登记表
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="extractForm('入党积极分子报备名册')">
+                            <i class="fas fa-file-alt me-2"></i> 入党积极分子报备名册
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- Firebase SDK -->
+    <!-- ================================================================ -->
+    <!-- 引入 Firebase 兼容模式 -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js">
+    </script>
+
+    <script>
+        // ================================================================
+        //  🔥 Firebase 配置（请替换为你自己的配置）
+        //  ================================================================
+        //  1. 访问 https://console.firebase.google.com/
+        //  2. 创建一个新项目
+        //  3. 左侧菜单 "构建" → "Firestore Database" → "创建数据库"
+        //  4. 左侧菜单 "项目设置" → "您的应用" → 选择 Web (</>)
+        //  5. 复制 firebaseConfig 对象替换下面
+        //  6. 在 Firestore 规则中设置: allow read, write: if true; (测试用)
+        // ================================================================
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDemoKeyReplaceMe",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ================================================================
+        //  数据层 - Firestore 版本
+        // ================================================================
+        let users = [];
+        let members = [];
+        let currentUser = null;
+        let adminFilter = 'all';
+        let branchFilter = 'all';
+        let adminDetailId = null;
+        let notifications = [];
+        let userFillTargetCategory = '';
+
+        // 实时监听：users 集合
+        function listenUsers() {
+            db.collection('users').onSnapshot(snapshot => {
+                users = [];
+                snapshot.forEach(doc => {
+                    users.push({ id: doc.id, ...doc.data() });
+                });
+                // 如果已经登录，刷新界面
+                if (currentUser) {
+                    const isAdmin = currentUser.role === 'admin';
+                    if (isAdmin) {
+                        adminRenderDashboard();
+                        adminRenderList();
+                        updateNotificationBadge();
+                    } else {
+                        const member = getMemberByUserId(currentUser.id);
+                        if (member) userRenderProfile(member);
+                        updateUserCategoryStatus();
+                        updateUserMessageBadge();
+                    }
+                    document.getElementById('mainTotal').textContent = members.length;
+                }
+            });
+        }
+
+        // 实时监听：members 集合
+        function listenMembers() {
+            db.collection('members').onSnapshot(snapshot => {
+                members = [];
+                snapshot.forEach(doc => {
+                    members.push({ id: doc.id, ...doc.data() });
+                });
+                if (currentUser) {
+                    const isAdmin = currentUser.role === 'admin';
+                    if (isAdmin) {
+                        adminRenderDashboard();
+                        adminRenderList();
+                        updateNotificationBadge();
+                    } else {
+                        const member = getMemberByUserId(currentUser.id);
+                        if (member) userRenderProfile(member);
+                        updateUserCategoryStatus();
+                        updateUserMessageBadge();
+                    }
+                    document.getElementById('mainTotal').textContent = members.length;
+                }
+            });
+        }
+
+        // 实时监听：notifications 集合
+        function listenNotifications() {
+            db.collection('notifications').onSnapshot(snapshot => {
+                notifications = [];
+                snapshot.forEach(doc => {
+                    notifications.push({ id: doc.id, ...doc.data() });
+                });
+                if (currentUser) {
+                    updateNotificationBadge();
+                    updateUserMessageBadge();
+                    // 如果当前在消息页面，刷新消息列表
+                    if (!document.getElementById('view-user-messages').classList.contains('hidden')) {
+                        renderUserMessages();
+                    }
+                }
+            });
+        }
+
+        // 启动监听
+        listenUsers();
+        listenMembers();
+        listenNotifications();
+
+        // ================================================================
+        //  工具函数
+        // ================================================================
+        function getCategoryBadge(cat) {
+            const map = {
+                '入党申请人': 'badge-applicant',
+                '入党积极分子': 'badge-active',
+                '发展对象': 'badge-develop',
+                '预备党员': 'badge-prep',
+                '正式党员': 'badge-formal'
+            };
+            const cls = map[cat] || 'bg-secondary';
+            return `<span class="badge badge-category ${cls}">${cat}</span>`;
+        }
+
+        function getMemberByUserId(uid) {
+            return members.find(m => m.userId === uid);
+        }
+
+        function getUserByMemberId(mid) {
+            return users.find(u => u.memberId === mid);
+        }
+
+        function getUserById(uid) {
+            return users.find(u => u.id === uid);
+        }
+
+        function getMissingFields(member) {
+            const required = ['name', 'class', 'branch'];
+            const missing = [];
+            required.forEach(f => {
+                if (!member[f] || member[f].trim() === '') missing.push(f);
+            });
+            if (!member.phone || member.phone.trim() === '') missing.push('电话');
+            if (!member.studentId || member.studentId.trim() === '') missing.push('学号');
+            return missing;
+        }
+
+        function isFormComplete(member) {
+            if (!member.category || member.category === '') return false;
+            return getMissingFields(member).length === 0;
+        }
+
+        // ================================================================
+        //  认证相关
+        // ================================================================
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            // 在 Firestore 中查找用户
+            db.collection('users').where('username', '==', username).get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        alert('用户名或密码错误！');
+                        return;
+                    }
+                    let foundUser = null;
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.password === password) {
+                            foundUser = { id: doc.id, ...data };
+                        }
+                    });
+                    if (!foundUser) {
+                        alert('用户名或密码错误！');
+                        return;
+                    }
+                    currentUser = foundUser;
+                    localStorage.setItem('partyCurrentUser', JSON.stringify(foundUser));
+                    enterMainApp();
+                })
+                .catch(err => {
+                    console.error('登录错误:', err);
+                    alert('登录失败，请检查网络或Firebase配置');
+                });
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+            const name = document.getElementById('regName').value.trim();
+            const cls = document.getElementById('regClass').value.trim();
+            const branch = document.getElementById('regBranch').value;
+
+            if (!username || !password || !name || !cls || !branch) {
+                alert('请填写所有必填项！');
+                return;
+            }
+            if (password !== confirm) {
+                alert('两次密码输入不一致！');
+                return;
+            }
+            if (password.length < 6) {
+                alert('密码至少6位！');
+                return;
+            }
+
+            // 检查用户名是否已存在
+            db.collection('users').where('username', '==', username).get()
+                .then(snapshot => {
+                    if (!snapshot.empty) {
+                        alert('用户名已存在！');
+                        return;
+                    }
+                    // 创建用户和成员
+                    const userData = {
+                        username: username,
+                        password: password,
+                        role: 'user',
+                        branch: branch
+                    };
+                    const memberData = {
+                        userId: '', // 稍后更新
+                        category: '',
+                        name: name,
+                        branch: branch,
+                        gender: '男',
+                        ethnicity: '汉族',
+                        politics: '共青团员',
+                        class: cls,
+                        studentId: '',
+                        phone: '',
+                        idCard: '',
+                        birth: '',
+                        native: '',
+                        partyApplyDate: '',
+                        partyTrainDate: '',
+                        recommendRate: '',
+                        ranking: '',
+                        english: '无',
+                        computer: '无',
+                        retake: 0,
+                        formerPos: '',
+                        currentPos: '',
+                        volunteer: '',
+                        volunteerHours: '',
+                        moralStamps: '',
+                        competition: '',
+                        awards: '',
+                        punishment: '无',
+                        studyScore: '',
+                        criticism: 0,
+                        thoughtReport: 0,
+                        remarks: '',
+                        createdAt: new Date().toISOString(),
+                        formStatus: {}
+                    };
+
+                    // 先创建用户，再创建成员
+                    db.collection('users').add(userData)
+                        .then(docRef => {
+                            const uid = docRef.id;
+                            memberData.userId = uid;
+                            return db.collection('members').add(memberData);
+                        })
+                        .then(() => {
+                            alert('注册成功！请登录。');
+                            showLogin();
+                            document.getElementById('loginUsername').value = username;
+                            document.getElementById('loginPassword').value = password;
+                        })
+                        .catch(err => {
+                            console.error('注册错误:', err);
+                            alert('注册失败，请检查网络或Firebase配置');
+                        });
+                })
+                .catch(err => {
+                    console.error('检查用户名错误:', err);
+                    alert('注册失败，请检查网络或Firebase配置');
+                });
+        }
+
+        function handleLogout() {
+            if (confirm('确认退出登录吗？')) {
+                currentUser = null;
+                localStorage.removeItem('partyCurrentUser');
+                document.getElementById('page-main').classList.add('hidden');
+                document.getElementById('page-login').classList.remove('hidden');
+                document.getElementById('page-register').classList.add('hidden');
+            }
+        }
+
+        function enterMainApp() {
+            document.getElementById('page-login').classList.add('hidden');
+            document.getElementById('page-register').classList.add('hidden');
+            document.getElementById('page-main').classList.remove('hidden');
+
+            const isAdmin = currentUser.role === 'admin';
+            document.getElementById('view-admin').classList.toggle('hidden', !isAdmin);
+            document.getElementById('view-user').classList.toggle('hidden', isAdmin);
+            document.getElementById('view-notification').classList.add('hidden');
+            document.getElementById('view-user-messages').classList.add('hidden');
+
+            if (isAdmin) {
+                document.getElementById('mainTitle').textContent = '管理员后台';
+                document.getElementById('mainSubtitle').textContent = '土木与环境工程学院 · 党建办公室 · 管理员';
+                document.getElementById('mainUserInfo').textContent = '管理员: ' + currentUser.username;
+                adminRenderDashboard();
+                adminRenderList();
+                updateNotificationBadge();
+            } else {
+                document.getElementById('mainTitle').textContent = '个人中心';
+                document.getElementById('mainSubtitle').textContent = '土木与环境工程学院 · 党建办公室 · 个人信息管理';
+                document.getElementById('mainUserInfo').textContent = currentUser.username;
+                const member = getMemberByUserId(currentUser.id);
+                if (member) {
+                    userRenderProfile(member);
+                    updateUserCategoryStatus();
+                } else {
+                    // 如果没找到成员，创建一个
+                    const newMember = {
+                        userId: currentUser.id,
+                        category: '',
+                        name: currentUser.username,
+                        branch: currentUser.branch || '工力本科生党支部',
+                        gender: '男',
+                        ethnicity: '汉族',
+                        politics: '共青团员',
+                        class: '',
+                        studentId: '',
+                        phone: '',
+                        idCard: '',
+                        birth: '',
+                        native: '',
+                        partyApplyDate: '',
+                        partyTrainDate: '',
+                        recommendRate: '',
+                        ranking: '',
+                        english: '无',
+                        computer: '无',
+                        retake: 0,
+                        formerPos: '',
+                        currentPos: '',
+                        volunteer: '',
+                        volunteerHours: '',
+                        moralStamps: '',
+                        competition: '',
+                        awards: '',
+                        punishment: '无',
+                        studyScore: '',
+                        criticism: 0,
+                        thoughtReport: 0,
+                        remarks: '',
+                        createdAt: new Date().toISOString(),
+                        formStatus: {}
+                    };
+                    db.collection('members').add(newMember)
+                        .then(() => {
+                            // 数据会通过监听自动刷新
+                        })
+                        .catch(err => console.error('创建成员失败:', err));
+                }
+                document.getElementById('mainTotal').textContent = members.length;
+                updateUserMessageBadge();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('page-login').classList.remove('hidden');
+            document.getElementById('page-register').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('page-login').classList.add('hidden');
+            document.getElementById('page-register').classList.remove('hidden');
+        }
+
+        function showPage(page) {
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('view-user').classList.add('hidden');
+            document.getElementById('view-notification').classList.add('hidden');
+            document.getElementById('view-user-messages').classList.add('hidden');
+
+            if (page === 'admin') {
+                document.getElementById('view-admin').classList.remove('hidden');
+                adminRenderList();
+                adminRenderDashboard();
+            } else if (page === 'user') {
+                document.getElementById('view-user').classList.remove('hidden');
+                const member = getMemberByUserId(currentUser.id);
+                if (member) userRenderProfile(member);
+                updateUserCategoryStatus();
+            } else if (page === 'notification') {
+                document.getElementById('view-notification').classList.remove('hidden');
+                renderNotificationList();
+            } else if (page === 'usermessages') {
+                document.getElementById('view-user-messages').classList.remove('hidden');
+                renderUserMessages();
+            }
+        }
+
+        // ================================================================
+        //  管理员功能
+        // ================================================================
+        function adminRenderDashboard() {
+            const counts = { '入党申请人': 0, '入党积极分子': 0, '发展对象': 0, '预备党员': 0, '正式党员': 0 };
+            members.forEach(m => {
+                if (m.category && counts[m.category] !== undefined) counts[m.category]++;
+            });
+            document.getElementById('countApplicant').textContent = counts['入党申请人'] + ' 人';
+            document.getElementById('countActive').textContent = counts['入党积极分子'] + ' 人';
+            document.getElementById('countDevelop').textContent = counts['发展对象'] + ' 人';
+            document.getElementById('countPrep').textContent = counts['预备党员'] + ' 人';
+            document.getElementById('countFormal').textContent = counts['正式党员'] + ' 人';
+            document.getElementById('mainTotal').textContent = members.length;
+        }
+
+        function adminRenderList() {
+            let filtered = members;
+            if (adminFilter !== 'all') {
+                filtered = filtered.filter(m => m.category === adminFilter);
+            }
+            if (branchFilter !== 'all') {
+                filtered = filtered.filter(m => m.branch === branchFilter);
+            }
+            document.getElementById('adminListCount').textContent = filtered.length;
+            document.getElementById('adminFooterCount').textContent = filtered.length;
+
+            const tbody = document.getElementById('adminTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x mb-2"></i><br>暂无数据</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = filtered.map((m, idx) => `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${m.name}</strong></td>
+                        <td>${m.category ? getCategoryBadge(m.category) : '<span class="badge bg-secondary">未选择</span>'}</td>
+                        <td><span class="badge bg-secondary">${m.branch || '-'}</span></td>
+                        <td>${m.class || '-'}</td>
+                        <td>${m.ethnicity || '-'}</td>
+                        <td>${m.english || '-'}</td>
+                        <td>${m.ranking || '-'}</td>
+                        <td>${m.volunteerHours || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="adminViewDetail('${m.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="adminEditMember('${m.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="adminDeleteMember('${m.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        function adminFilterChange() {
+            adminFilter = document.getElementById('adminFilterSelect').value;
+            document.getElementById('currentCategoryLabel').textContent = adminFilter === 'all' ? '全体人员' : adminFilter;
+            adminRenderList();
+        }
+
+        function filterCategory(cat) {
+            adminFilter = cat;
+            document.getElementById('adminFilterSelect').value = cat;
+            document.getElementById('currentCategoryLabel').textContent = cat;
+            if (document.getElementById('view-admin').classList.contains('hidden')) {
+                showPage('admin');
+            } else {
+                adminRenderList();
+            }
+        }
+
+        function filterByBranch(branch) {
+            branchFilter = branch;
+            document.querySelectorAll('.branch-tag').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.branch-tag[data-branch="${branch}"]`)?.classList.add('active');
+            adminRenderList();
+        }
+
+        function adminAddUser() {
+            document.getElementById('adminEditId').value = '';
+            document.getElementById('adminEditUserId').value = '';
+            document.getElementById('adminModalTitle').innerHTML = '<i class="fas fa-user-plus me-2"></i> 新增人员';
+            document.getElementById('adminMemberForm').reset();
+            document.getElementById('adminFormGender').value = '男';
+            document.getElementById('adminFormEthnicity').value = '汉族';
+            document.getElementById('adminFormPolitics').value = '共青团员';
+            document.getElementById('adminFormEnglish').value = '无';
+            document.getElementById('adminFormComputer').value = '无';
+            document.getElementById('adminFormRetake').value = 0;
+            document.getElementById('adminFormCriticism').value = 0;
+            document.getElementById('adminFormThoughtReport').value = 0;
+            document.getElementById('adminFormPunishment').value = '无';
+            const modal = new bootstrap.Modal(document.getElementById('adminMemberModal'));
+            modal.show();
+        }
+
+        function adminEditMember(id) {
+            const m = members.find(x => x.id === id);
+            if (!m) return;
+            document.getElementById('adminEditId').value = m.id;
+            document.getElementById('adminEditUserId').value = m.userId || '';
+            document.getElementById('adminModalTitle').innerHTML = '<i class="fas fa-user-edit me-2"></i> 编辑人员';
+            document.getElementById('adminFormCategory').value = m.category || '';
+            document.getElementById('adminFormName').value = m.name || '';
+            document.getElementById('adminFormGender').value = m.gender || '男';
+            document.getElementById('adminFormEthnicity').value = m.ethnicity || '汉族';
+            document.getElementById('adminFormPolitics').value = m.politics || '共青团员';
+            document.getElementById('adminFormBranch').value = m.branch || '';
+            document.getElementById('adminFormClass').value = m.class || '';
+            document.getElementById('adminFormStudentId').value = m.studentId || '';
+            document.getElementById('adminFormPhone').value = m.phone || '';
+            document.getElementById('adminFormIdCard').value = m.idCard || '';
+            document.getElementById('adminFormBirth').value = m.birth || '';
+            document.getElementById('adminFormNative').value = m.native || '';
+            document.getElementById('adminFormPartyApply').value = m.partyApplyDate || '';
+            document.getElementById('adminFormPartyTrain').value = m.partyTrainDate || '';
+            document.getElementById('adminFormRecommend').value = m.recommendRate || '';
+            document.getElementById('adminFormRanking').value = m.ranking || '';
+            document.getElementById('adminFormEnglish').value = m.english || '无';
+            document.getElementById('adminFormComputer').value = m.computer || '无';
+            document.getElementById('adminFormRetake').value = m.retake || 0;
+            document.getElementById('adminFormFormerPos').value = m.formerPos || '';
+            document.getElementById('adminFormCurrentPos').value = m.currentPos || '';
+            document.getElementById('adminFormVolunteer').value = m.volunteer || '';
+            document.getElementById('adminFormVolunteerHours').value = m.volunteerHours || '';
+            document.getElementById('adminFormMoralStamps').value = m.moralStamps || '';
+            document.getElementById('adminFormCompetition').value = m.competition || '';
+            document.getElementById('adminFormAwards').value = m.awards || '';
+            document.getElementById('adminFormPunishment').value = m.punishment || '无';
+            document.getElementById('adminFormStudyScore').value = m.studyScore || '';
+            document.getElementById('adminFormCriticism').value = m.criticism || 0;
+            document.getElementById('adminFormThoughtReport').value = m.thoughtReport || 0;
+            document.getElementById('adminFormRemarks').value = m.remarks || '';
+            const modal = new bootstrap.Modal(document.getElementById('adminMemberModal'));
+            modal.show();
+        }
+
+        function adminSaveMember() {
+            const id = document.getElementById('adminEditId').value;
+            const category = document.getElementById('adminFormCategory').value;
+            const name = document.getElementById('adminFormName').value.trim();
+            const branch = document.getElementById('adminFormBranch').value;
+
+            if (!category || !name || !branch) {
+                alert('请填写「人员类别」「姓名」和「所属支部」！');
+                return;
+            }
+
+            const data = {
+                category: category,
+                name: name,
+                branch: branch,
+                gender: document.getElementById('adminFormGender').value,
+                ethnicity: document.getElementById('adminFormEthnicity').value,
+                politics: document.getElementById('adminFormPolitics').value,
+                class: document.getElementById('adminFormClass').value,
+                studentId: document.getElementById('adminFormStudentId').value,
+                phone: document.getElementById('adminFormPhone').value,
+                idCard: document.getElementById('adminFormIdCard').value,
+                birth: document.getElementById('adminFormBirth').value,
+                native: document.getElementById('adminFormNative').value,
+                partyApplyDate: document.getElementById('adminFormPartyApply').value,
+                partyTrainDate: document.getElementById('adminFormPartyTrain').value,
+                recommendRate: document.getElementById('adminFormRecommend').value,
+                ranking: document.getElementById('adminFormRanking').value,
+                english: document.getElementById('adminFormEnglish').value,
+                computer: document.getElementById('adminFormComputer').value,
+                retake: parseInt(document.getElementById('adminFormRetake').value) || 0,
+                formerPos: document.getElementById('adminFormFormerPos').value,
+                currentPos: document.getElementById('adminFormCurrentPos').value,
+                volunteer: document.getElementById('adminFormVolunteer').value,
+                volunteerHours: document.getElementById('adminFormVolunteerHours').value,
+                moralStamps: document.getElementById('adminFormMoralStamps').value,
+                competition: document.getElementById('adminFormCompetition').value,
+                awards: document.getElementById('adminFormAwards').value,
+                punishment: document.getElementById('adminFormPunishment').value || '无',
+                studyScore: document.getElementById('adminFormStudyScore').value,
+                criticism: parseInt(document.getElementById('adminFormCriticism').value) || 0,
+                thoughtReport: parseInt(document.getElementById('adminFormThoughtReport').value) || 0,
+                remarks: document.getElementById('adminFormRemarks').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (id) {
+                // 更新现有成员
+                db.collection('members').doc(id).update(data)
+                    .then(() => {
+                        const modalEl = document.getElementById('adminMemberModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+                        alert('保存成功！');
+                    })
+                    .catch(err => {
+                        console.error('更新失败:', err);
+                        alert('保存失败，请重试');
+                    });
+            } else {
+                // 新增：创建用户和成员
+                const username = name + (new Date().getTime() % 1000);
+                const userData = {
+                    username: username,
+                    password: '123456',
+                    role: 'user',
+                    branch: branch
+                };
+                db.collection('users').add(userData)
+                    .then(docRef => {
+                        const uid = docRef.id;
+                        data.userId = uid;
+                        data.createdAt = new Date().toISOString();
+                        data.formStatus = {};
+                        return db.collection('members').add(data);
+                    })
+                    .then(() => {
+                        const modalEl = document.getElementById('adminMemberModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+                        alert('新增成功！默认用户名: ' + username + '，密码: 123456');
+                    })
+                    .catch(err => {
+                        console.error('新增失败:', err);
+                        alert('保存失败，请重试');
+                    });
+            }
+        }
+
+        function adminViewDetail(id) {
+            const m = members.find(x => x.id === id);
+            if (!m) return;
+            adminDetailId = id;
+            const container = document.getElementById('adminDetailContent');
+            const fields = [
+                ['姓名', m.name],
+                ['类别', m.category || '未选择'],
+                ['支部', m.branch],
+                ['性别', m.gender],
+                ['民族', m.ethnicity],
+                ['政治面貌', m.politics],
+                ['班级', m.class],
+                ['学号', m.studentId],
+                ['联系电话', m.phone],
+                ['身份证号', m.idCard],
+                ['出生日期', m.birth],
+                ['籍贯', m.native],
+                ['入党申请书提交', m.partyApplyDate],
+                ['党校结业时间', m.partyTrainDate],
+                ['团支部推优率', m.recommendRate],
+                ['综合测评排名', m.ranking],
+                ['英语过级', m.english],
+                ['计算机过级', m.computer],
+                ['重修科目数', m.retake],
+                ['曾任职务', m.formerPos],
+                ['现任职情况', m.currentPos],
+                ['志愿活动', m.volunteer],
+                ['志愿服务时长', m.volunteerHours],
+                ['德育章数量', m.moralStamps],
+                ['学科竞赛/论文/专利', m.competition],
+                ['获奖情况', m.awards],
+                ['处分', m.punishment],
+                ['学习强国分数', m.studyScore],
+                ['通报批评次数', m.criticism],
+                ['思想汇报篇数', m.thoughtReport],
+                ['备注', m.remarks]
+            ];
+            container.innerHTML = fields.map(([label, value]) => `
+                    <div class="detail-item">
+                        <span class="label">${label}</span>
+                        <span class="value">${value || '-'}</span>
+                    </div>
+                `).join('');
+            const modal = new bootstrap.Modal(document.getElementById('adminDetailModal'));
+            modal.show();
+        }
+
+        function adminEditFromDetail() {
+            if (adminDetailId) {
+                const modalEl = document.getElementById('adminDetailModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                setTimeout(() => adminEditMember(adminDetailId), 300);
+            }
+        }
+
+        function adminDeleteFromDetail() {
+            if (adminDetailId && confirm('确认删除该人员信息吗？')) {
+                const modalEl = document.getElementById('adminDetailModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                setTimeout(() => adminDeleteMember(adminDetailId), 300);
+            }
+        }
+
+        function adminDeleteMember(id) {
+            if (!confirm('确认删除该人员信息吗？')) return;
+            const m = members.find(x => x.id === id);
+            if (m && m.userId) {
+                // 删除关联用户
+                db.collection('users').doc(m.userId).delete()
+                    .catch(err => console.error('删除用户失败:', err));
+            }
+            db.collection('members').doc(id).delete()
+                .then(() => {
+                    // 数据通过监听自动刷新
+                })
+                .catch(err => {
+                    console.error('删除失败:', err);
+                    alert('删除失败，请重试');
+                });
+        }
+
+        function adminRefresh() {
+            // 强制刷新由监听自动完成
+            alert('数据已同步');
+        }
+
+        // ================================================================
+        //  导出Excel
+        // ================================================================
+        function adminExportExcel() {
+            if (members.length === 0) {
+                alert('暂无数据可导出');
+                return;
+            }
+            const modal = new bootstrap.Modal(document.getElementById('extractModal'));
+            modal.show();
+        }
+
+        function extractForm(type) {
+            const modalEl = document.getElementById('extractModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            let headers = [];
+            let rows = [];
+            let filtered = members;
+
+            if (type === '发展对象推荐情况登记表') {
+                filtered = members.filter(m => m.category === '发展对象');
+                headers = ['序号', '支部', '班级', '姓名', '性别', '民族', '团支部推优率', '上学年综合测评排名',
+                    '英语过级', '曾任职务', '现任职情况', '志愿活动参与情况', '志愿服务时长',
+                    '学科竞赛、论文和专利情况', '其他获奖情况', '备注'
+                ];
+                rows = filtered.map((m, idx) => [
+                    idx + 1,
+                    m.branch || '',
+                    m.class || '',
+                    m.name || '',
+                    m.gender || '',
+                    m.ethnicity || '',
+                    m.recommendRate || '',
+                    m.ranking || '',
+                    m.english || '',
+                    m.formerPos || '',
+                    m.currentPos || '',
+                    m.volunteer || '',
+                    m.volunteerHours || '',
+                    m.competition || '',
+                    m.awards || '',
+                    m.remarks || ''
+                ]);
+            } else if (type === '发展对象推荐情况面试表') {
+                filtered = members.filter(m => m.category === '发展对象');
+                headers = ['序号', '姓名', '班级', '支部', '综合测评排名', '英语过级', '志愿服务时长', '学科竞赛', '获奖情况'];
+                rows = filtered.map((m, idx) => [
+                    idx + 1,
+                    m.name || '',
+                    m.class || '',
+                    m.branch || '',
+                    m.ranking || '',
+                    m.english || '',
+                    m.volunteerHours || '',
+                    m.competition || '',
+                    m.awards || ''
+                ]);
+            } else if (type === '申请入党积极分子信息表') {
+                filtered = members.filter(m => m.category === '入党积极分子');
+                headers = ['序号', '姓名', '民族', '性别', '班级', '联系电话', '籍贯', '政治面貌', '出生年月日',
+                    '身份证号', '何时提交入党申请书', '是否重修', '是否过四级', '职务', '获奖情况', '有何处分', '学习强国分数'
+                ];
+                rows = filtered.map((m, idx) => [
+                    idx + 1,
+                    m.name || '',
+                    m.ethnicity || '',
+                    m.gender || '',
+                    m.class || '',
+                    m.phone || '',
+                    m.native || '',
+                    m.politics || '',
+                    m.birth || '',
+                    m.idCard || '',
+                    m.partyApplyDate || '',
+                    m.retake > 0 ? '是' : '否',
+                    m.english !== '无' ? '是' : '否',
+                    m.currentPos || '',
+                    m.awards || '',
+                    m.punishment || '',
+                    m.studyScore || ''
+                ]);
+            } else if (type === '入党积极分子推荐情况登记表') {
+                filtered = members.filter(m => m.category === '入党积极分子');
+                headers = ['序号', '支部', '班级', '姓名', '性别', '民族', '推优率', '综合测评排名', '英语过级',
+                    '曾任职务', '现任职情况', '志愿活动', '志愿服务时长', '学科竞赛', '获奖情况', '备注'
+                ];
+                rows = filtered.map((m, idx) => [
+                    idx + 1,
+                    m.branch || '',
+                    m.class || '',
+                    m.name || '',
+                    m.gender || '',
+                    m.ethnicity || '',
+                    m.recommendRate || '',
+                    m.ranking || '',
+                    m.english || '',
+                    m.formerPos || '',
+                    m.currentPos || '',
+                    m.volunteer || '',
+                    m.volunteerHours || '',
+                    m.competition || '',
+                    m.awards || '',
+                    m.remarks || ''
+                ]);
+            } else if (type === '入党积极分子报备名册') {
+                filtered = members.filter(m => m.category === '入党积极分子');
+                headers = ['序号', '姓名', '班级', '支部', '推优率', '综合测评', '英语过级', '志愿服务时长', '获奖情况'];
+                rows = filtered.map((m, idx) => [
+                    idx + 1,
+                    m.name || '',
+                    m.class || '',
+                    m.branch || '',
+                    m.recommendRate || '',
+                    m.ranking || '',
+                    m.english || '',
+                    m.volunteerHours || '',
+                    m.awards || ''
+                ]);
+            }
+
+            if (rows.length === 0) {
+                alert('该类别暂无数据可导出');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            XLSX.utils.book_append_sheet(wb, ws, type);
+            XLSX.writeFile(wb, `${type}_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // ================================================================
+        //  通知中心（管理员）
+        // ================================================================
+        function showNotificationCenter() {
+            if (document.getElementById('view-admin').classList.contains('hidden')) {
+                showPage('admin');
+            }
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('view-notification').classList.remove('hidden');
+            renderNotificationList();
+        }
+
+        function renderNotificationList() {
+            const incomplete = members.filter(m => !isFormComplete(m));
+            const tbody = document.getElementById('notifyTableBody');
+            document.getElementById('notifyCount').textContent = incomplete.length;
+
+            if (incomplete.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-check-circle fa-2x mb-2"></i><br>所有人员信息均已完整填写</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = incomplete.map(m => {
+                const missing = getMissingFields(m);
+                return `
+                        <tr>
+                            <td><strong>${m.name}</strong></td>
+                            <td>${m.category ? getCategoryBadge(m.category) : '<span class="badge bg-secondary">未选择</span>'}</td>
+                            <td><span class="badge bg-secondary">${m.branch || '-'}</span></td>
+                            <td>${m.class || '-'}</td>
+                            <td>${missing.join('、')}</td>
+                            <td><span class="badge bg-danger">未完善</span></td>
+                        </tr>
+                    `;
+            }).join('');
+            updateNotificationBadge();
+        }
+
+        function updateNotificationBadge() {
+            const incomplete = members.filter(m => !isFormComplete(m));
+            const badge = document.getElementById('notifyBadge');
+            if (incomplete.length > 0) {
+                badge.textContent = incomplete.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function sendNotifications() {
+            const incomplete = members.filter(m => !isFormComplete(m));
+            if (incomplete.length === 0) {
+                alert('所有人员信息均已完整，无需发送提醒。');
+                return;
+            }
+            const list = document.getElementById('notifyRecipientList');
+            list.innerHTML = incomplete.map(m =>
+                `<span class="badge bg-secondary me-1">${m.name} (${m.class || '未填'})</span>`
+            ).join('');
+
+            const modal = new bootstrap.Modal(document.getElementById('notifyDetailModal'));
+            modal.show();
+        }
+
+        function confirmSendNotifications() {
+            const incomplete = members.filter(m => !isFormComplete(m));
+            const message = document.getElementById('notifyMessage').value;
+
+            const batch = db.batch();
+            incomplete.forEach(m => {
+                const notifData = {
+                    userId: m.userId,
+                    memberId: m.id,
+                    message: message,
+                    sentAt: new Date().toISOString(),
+                    read: false
+                };
+                const ref = db.collection('notifications').doc();
+                batch.set(ref, notifData);
+            });
+            batch.commit()
+                .then(() => {
+                    const modalEl = document.getElementById('notifyDetailModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    alert(`已向 ${incomplete.length} 位信息不完善人员发送提醒通知！`);
+                    renderNotificationList();
+                    updateNotificationBadge();
+                })
+                .catch(err => {
+                    console.error('发送通知失败:', err);
+                    alert('发送失败，请重试');
+                });
+        }
+
+        // ================================================================
+        //  普通用户功能
+        // ================================================================
+        function userRenderProfile(member) {
+            document.getElementById('userProfileName').textContent = member.name || '未填写';
+            document.getElementById('userProfileCategory').textContent = member.category || '未选择';
+            document.getElementById('userProfileClass').textContent = member.class || '未填写';
+            document.getElementById('userProfileBranch').textContent = member.branch || '未填写';
+
+            const container = document.getElementById('userProfileDetail');
+            const fields = [
+                ['姓名', member.name],
+                ['类别', member.category || '未选择'],
+                ['支部', member.branch],
+                ['性别', member.gender],
+                ['民族', member.ethnicity],
+                ['政治面貌', member.politics],
+                ['班级', member.class],
+                ['学号', member.studentId],
+                ['联系电话', member.phone],
+                ['身份证号', member.idCard],
+                ['出生日期', member.birth],
+                ['籍贯', member.native],
+                ['入党申请书提交', member.partyApplyDate],
+                ['党校结业时间', member.partyTrainDate],
+                ['团支部推优率', member.recommendRate],
+                ['综合测评排名', member.ranking],
+                ['英语过级', member.english],
+                ['计算机过级', member.computer],
+                ['重修科目数', member.retake],
+                ['曾任职务', member.formerPos],
+                ['现任职情况', member.currentPos],
+                ['志愿活动', member.volunteer],
+                ['志愿服务时长', member.volunteerHours],
+                ['德育章数量', member.moralStamps],
+                ['学科竞赛/论文/专利', member.competition],
+                ['获奖情况', member.awards],
+                ['处分', member.punishment],
+                ['学习强国分数', member.studyScore],
+                ['通报批评次数', member.criticism],
+                ['思想汇报篇数', member.thoughtReport],
+                ['备注', member.remarks]
+            ];
+            container.innerHTML = fields.map(([label, value]) => `
+                    <div class="detail-item">
+                        <span class="label">${label}</span>
+                        <span class="value">${value || '-'}</span>
+                    </div>
+                `).join('');
+            document.getElementById('mainTotal').textContent = members.length;
+        }
+
+        function updateUserCategoryStatus() {
+            const member = getMemberByUserId(currentUser.id);
+            if (!member) return;
+            const status = member.category || '未选择';
+            document.getElementById('userProfileCategory').textContent = status;
+
+            const counts = {
+                '入党申请人': document.getElementById('userCountApplicant'),
+                '入党积极分子': document.getElementById('userCountActive'),
+                '发展对象': document.getElementById('userCountDevelop'),
+                '预备党员': document.getElementById('userCountPrep'),
+                '正式党员': document.getElementById('userCountFormal')
+            };
+            CATEGORY_LIST.forEach(cat => {
+                if (status === cat) {
+                    counts[cat].innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> 已填写</span>';
+                } else {
+                    counts[cat].textContent = '待填写';
+                }
+            });
+        }
+
+        function userFillForm(category) {
+            const member = getMemberByUserId(currentUser.id);
+            if (!member) return;
+
+            userFillTargetCategory = category;
+            document.getElementById('userFillTitle').textContent = `填写 ${category} 信息`;
+            document.getElementById('userFillCategory').value = category;
+            document.getElementById('userFillMemberId').value = member.id;
+
+            // 预填充已有信息
+            document.getElementById('userFillName').value = member.name || '';
+            document.getElementById('userFillGender').value = member.gender || '男';
+            document.getElementById('userFillEthnicity').value = member.ethnicity || '汉族';
+            document.getElementById('userFillPolitics').value = member.politics || '共青团员';
+            document.getElementById('userFillClass').value = member.class || '';
+            document.getElementById('userFillStudentId').value = member.studentId || '';
+            document.getElementById('userFillPhone').value = member.phone || '';
+            document.getElementById('userFillIdCard').value = member.idCard || '';
+            document.getElementById('userFillBirth').value = member.birth || '';
+            document.getElementById('userFillNative').value = member.native || '';
+            document.getElementById('userFillPartyApply').value = member.partyApplyDate || '';
+            document.getElementById('userFillPartyTrain').value = member.partyTrainDate || '';
+            document.getElementById('userFillRecommend').value = member.recommendRate || '';
+            document.getElementById('userFillRanking').value = member.ranking || '';
+            document.getElementById('userFillEnglish').value = member.english || '无';
+            document.getElementById('userFillComputer').value = member.computer || '无';
+            document.getElementById('userFillRetake').value = member.retake || 0;
+            document.getElementById('userFillFormerPos').value = member.formerPos || '';
+            document.getElementById('userFillCurrentPos').value = member.currentPos || '';
+            document.getElementById('userFillVolunteer').value = member.volunteer || '';
+            document.getElementById('userFillVolunteerHours').value = member.volunteerHours || '';
+            document.getElementById('userFillMoralStamps').value = member.moralStamps || '';
+            document.getElementById('userFillCompetition').value = member.competition || '';
+            document.getElementById('userFillAwards').value = member.awards || '';
+            document.getElementById('userFillPunishment').value = member.punishment || '无';
+            document.getElementById('userFillStudyScore').value = member.studyScore || '';
+            document.getElementById('userFillCriticism').value = member.criticism || 0;
+            document.getElementById('userFillThoughtReport').value = member.thoughtReport || 0;
+            document.getElementById('userFillRemarks').value = member.remarks || '';
+            document.getElementById('userFillBranch').value = member.branch || '工力本科生党支部';
+
+            const modal = new bootstrap.Modal(document.getElementById('userFillModal'));
+            modal.show();
+        }
+
+        function userSaveForm() {
+            const member = getMemberByUserId(currentUser.id);
+            if (!member) return;
+
+            const category = document.getElementById('userFillCategory').value;
+            const name = document.getElementById('userFillName').value.trim();
+            const cls = document.getElementById('userFillClass').value.trim();
+
+            if (!name || !cls) {
+                alert('请填写姓名和班级！');
+                return;
+            }
+
+            const data = {
+                category: category,
+                name: name,
+                gender: document.getElementById('userFillGender').value,
+                ethnicity: document.getElementById('userFillEthnicity').value,
+                politics: document.getElementById('userFillPolitics').value,
+                class: cls,
+                studentId: document.getElementById('userFillStudentId').value,
+                phone: document.getElementById('userFillPhone').value,
+                idCard: document.getElementById('userFillIdCard').value,
+                birth: document.getElementById('userFillBirth').value,
+                native: document.getElementById('userFillNative').value,
+                partyApplyDate: document.getElementById('userFillPartyApply').value,
+                partyTrainDate: document.getElementById('userFillPartyTrain').value,
+                recommendRate: document.getElementById('userFillRecommend').value,
+                ranking: document.getElementById('userFillRanking').value,
+                english: document.getElementById('userFillEnglish').value,
+                computer: document.getElementById('userFillComputer').value,
+                retake: parseInt(document.getElementById('userFillRetake').value) || 0,
+                formerPos: document.getElementById('userFillFormerPos').value,
+                currentPos: document.getElementById('userFillCurrentPos').value,
+                volunteer: document.getElementById('userFillVolunteer').value,
+                volunteerHours: document.getElementById('userFillVolunteerHours').value,
+                moralStamps: document.getElementById('userFillMoralStamps').value,
+                competition: document.getElementById('userFillCompetition').value,
+                awards: document.getElementById('userFillAwards').value,
+                punishment: document.getElementById('userFillPunishment').value || '无',
+                studyScore: document.getElementById('userFillStudyScore').value,
+                criticism: parseInt(document.getElementById('userFillCriticism').value) || 0,
+                thoughtReport: parseInt(document.getElementById('userFillThoughtReport').value) || 0,
+                remarks: document.getElementById('userFillRemarks').value,
+                branch: document.getElementById('userFillBranch').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            db.collection('members').doc(member.id).update(data)
+                .then(() => {
+                    const modalEl = document.getElementById('userFillModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    alert('信息提交成功！已同步至管理员平台。');
+                })
+                .catch(err => {
+                    console.error('提交失败:', err);
+                    alert('提交失败，请重试');
+                });
+        }
+
+        function userViewMyInfo() {
+            const member = getMemberByUserId(currentUser.id);
+            if (!member) return;
+            userRenderProfile(member);
+        }
+
+        // ================================================================
+        //  用户消息系统
+        // ================================================================
+        function userViewMessages() {
+            if (document.getElementById('view-user').classList.contains('hidden')) {
+                showPage('user');
+            }
+            document.getElementById('view-user').classList.add('hidden');
+            document.getElementById('view-user-messages').classList.remove('hidden');
+            renderUserMessages();
+        }
+
+        function renderUserMessages() {
+            const userMsgs = notifications.filter(n => n.userId === currentUser.id);
+            const container = document.getElementById('userMessageList');
+
+            // 标记为已读
+            const batch = db.batch();
+            userMsgs.forEach(n => {
+                if (!n.read) {
+                    const ref = db.collection('notifications').doc(n.id);
+                    batch.update(ref, { read: true });
+                }
+            });
+            batch.commit().catch(err => console.error('标记已读失败:', err));
+
+            if (userMsgs.length === 0) {
+                container.innerHTML =
+                    `<div class="text-center text-muted py-4"><i class="fas fa-inbox fa-3x mb-2"></i><br>暂无消息</div>`;
+                return;
+            }
+
+            container.innerHTML = userMsgs.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt)).map(n => `
+                    <div class="msg-bubble">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold"><i class="fas fa-bell me-1" style="color: #b31b1b;"></i> 系统通知</span>
+                            <span class="msg-time">${new Date(n.sentAt).toLocaleString()}</span>
+                        </div>
+                        <p class="mb-0 mt-1">${n.message}</p>
+                    </div>
+                `).join('');
+            updateUserMessageBadge();
+        }
+
+        function updateUserMessageBadge() {
+            const unread = notifications.filter(n => n.userId === currentUser.id && !n.read);
+            const badge = document.getElementById('userMsgBadge');
+            if (unread.length > 0) {
+                badge.textContent = unread.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // ================================================================
+        //  初始化
+        // ================================================================
+        const CATEGORY_LIST = [
+            '入党申请人',
+            '入党积极分子',
+            '发展对象',
+            '预备党员',
+            '正式党员'
+        ];
+
+        // 检查是否有已登录用户
+        const savedUser = localStorage.getItem('partyCurrentUser');
+        if (savedUser) {
+            try {
+                const u = JSON.parse(savedUser);
+                // 在 Firestore 中验证用户
+                db.collection('users').doc(u.id).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            currentUser = { id: doc.id, ...doc.data() };
+                            enterMainApp();
+                        } else {
+                            localStorage.removeItem('partyCurrentUser');
+                            showLogin();
+                        }
+                    })
+                    .catch(() => {
+                        localStorage.removeItem('partyCurrentUser');
+                        showLogin();
+                    });
+            } catch (e) {
+                localStorage.removeItem('partyCurrentUser');
+                showLogin();
+            }
+        } else {
+            showLogin();
+        }
+
+        console.log('✅ 党员信息管理系统 (Firebase版) 已启动');
+        console.log('📊 实时数据同步已开启');
+    </script>
+</body>
+</html>
